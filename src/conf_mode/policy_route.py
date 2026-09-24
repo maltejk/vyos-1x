@@ -34,12 +34,12 @@ from vyos.utils.network import get_vrf_tableid
 from vyos.utils.network import interface_exists
 from vyos.defaults import rt_global_table
 from vyos.defaults import rt_global_vrf
+from vyos.firewall import get_pbr_table_mark
 from vyos.geoip import  geoip_refresh, geoip_update
 from vyos import ConfigError
 from vyos import airbag
 airbag.enable()
 
-mark_offset = 0x7FFFFFFF
 nftables_conf = '/run/nftables_policy.conf'
 domain_resolver_usage = '/run/use-vyos-domain-resolver-policy-route'
 domain_resolver_usage_glob = '/run/use-vyos-domain-resolver*'
@@ -264,7 +264,7 @@ def apply_table_marks(policy):
                             if vrf_table_id in tables:
                                 continue
                             tables.append(vrf_table_id)
-                            table_mark = mark_offset - vrf_table_id
+                            table_mark = get_pbr_table_mark(vrf_table_id)
                             cmdl(cmd_list + ['rule', 'add', 'pref', str(vrf_table_id),
                                               'fwmark', str(table_mark), 'table', str(vrf_table_id)])
 
@@ -279,7 +279,7 @@ def cleanup_table_marks():
             table = int(rule['table'])
             if fwmark[:2] == '0x':
                 fwmark = int(fwmark, 16)
-            if (int(fwmark) == (mark_offset - table)):
+            if (int(fwmark) == get_pbr_table_mark(table)):
                 cmdl(cmd_list + ['rule', 'del', 'fwmark', str(fwmark), 'table', str(table)])
 
 def apply(policy):
