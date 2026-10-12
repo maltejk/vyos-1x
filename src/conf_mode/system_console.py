@@ -133,8 +133,13 @@ def generate(console):
     return None
 
 def apply(console):
-    # Reset screen blanking
-    call('/usr/bin/setterm -blank 0 -powersave off -powerdown 0 -term linux </dev/tty1 >/dev/tty1 2>&1')
+    # SRX300: no VGA/VT console (/dev/tty1 does not exist, kernel without CONFIG_VT);
+    # setterm with </dev/tty1 fails with ENXIO and aborts the commit - only run it
+    # when a text console is actually present.
+    tty1 = os.path.exists('/dev/tty1')
+    if tty1:
+        # Reset screen blanking
+        call('/usr/bin/setterm -blank 0 -powersave off -powerdown 0 -term linux </dev/tty1 >/dev/tty1 2>&1')
 
     # Service control moved to vyos.utils.serial to unify checks and prompts.
     # If users are connected, we want to show an informational message on completing
@@ -144,7 +149,7 @@ def apply(console):
     if not console:
         return None
 
-    if 'powersave' in console.keys():
+    if tty1 and 'powersave' in console.keys():
         # Configure screen blank powersaving on VGA console
         call('/usr/bin/setterm -blank 15 -powersave powerdown -powerdown 60 -term linux </dev/tty1 >/dev/tty1 2>&1')
 
