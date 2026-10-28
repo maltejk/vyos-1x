@@ -151,7 +151,9 @@ def apply(sstp):
                 os.unlink(file)
         return None
 
-    call(f'systemctl reload-or-restart {systemd_service}')
+    # ExecReload only sends SIGUSR1, which does not make accel-pppd re-read
+    # sstp.conf - a reload alone leaves config changes inert. Always restart.
+    call(f'systemctl restart {systemd_service}')
 
 
 if __name__ == '__main__':
