@@ -1499,6 +1499,10 @@ def parse_arguments() -> Namespace:
 if __name__ == '__main__':
     try:
         args: Namespace = parse_arguments()
+        import srx_image_installer as srx
+        if srx.is_srx():
+            srx.install_image() if args.action == 'install' else srx.add_image()
+            exit()
         if args.action == 'install':
             install_image()
         if args.action == 'add':
