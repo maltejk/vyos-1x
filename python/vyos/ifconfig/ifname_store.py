@@ -244,6 +244,11 @@ def discover_devices(sys_class_net: str = '/sys/class/net') -> list:
             continue
         if (entry / 'device' / 'physfn').exists():
             continue
+        # SRX300: octeon-ethernet netdevs (uplink, loop0-3) are SoC-internal
+        # ports with no hw-id naming; the front ports ethN are VLAN devices
+        # of 'uplink' (bcm53343) and must not reach the mapping store.
+        if (entry / 'device' / 'driver').resolve().name == 'octeon_ethernet':
+            continue
         if entry.name.startswith('vf_'):
             continue
         if is_wireless(entry.name, sys_class_net):
