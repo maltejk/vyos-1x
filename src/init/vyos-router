@@ -721,6 +721,11 @@ start ()
     restore_if_missing_bootup_script post
 
     run_postconfig_scripts
+
+    # SRX status LED marker; read by srx-status-led.service
+    mkdir -p /run/srx
+    echo ${overall_status:-0} > /run/srx/status-led
+
     tmp=$(${vyos_libexec_dir}/read-saved-value.py --path "protocols rpki cache")
     if [[ ! -z "$tmp" ]]; then
         vtysh -c "rpki start"
