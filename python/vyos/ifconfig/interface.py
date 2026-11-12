@@ -569,10 +569,15 @@ class Interface(Control):
 
         # Get processor ID number
         cpu_id = ''
-        for line in self._cmdl(['sudo', 'dmidecode', '-t', '4']).splitlines():
-            if 'ID' in line:
-                cpu_id = re.sub(r'.*ID:', '', line).replace(' ', '')
-                break
+        try:
+            for line in self._cmdl(['sudo', 'dmidecode', '-t', '4']).splitlines():
+                if 'ID' in line:
+                    cpu_id = re.sub(r'.*ID:', '', line).replace(' ', '')
+                    break
+        except Exception:
+            # no DMI/dmidecode (e.g. MIPS): use the stable machine-id instead
+            from vyos.ifconfig.srx_board import machine_id
+            cpu_id = machine_id()
 
         # XXX: T3894 - it seems not all systems have eth0 - get a list of all
         # available Ethernet interfaces on the system (without VLAN subinterfaces)
