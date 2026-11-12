@@ -50,6 +50,11 @@
 #define GET_ACTIVE "cli-shell-api --show-active-only --show-show-defaults --show-ignore-edit showConfig"
 #define GET_SESSION "cli-shell-api --show-working-only --show-show-defaults --show-ignore-edit showConfig"
 
+#define CONFIGD_SOCK "/run/vyos-configd.sock"
+
+// configd reply deadline for the init message; 10 ms is missed under load/emulation
+#define INIT_TIMEOUT_US 250000
+
 #define COMMIT_MARKER "/var/tmp/initial_in_commit"
 #define QUEUE_MARKER "/var/tmp/last_in_queue"
 
@@ -119,7 +124,11 @@ int main(int argc, char* argv[])
     }
 
     if (access(COMMIT_MARKER, F_OK) != -1) {
-        init_timeout = initialization(requester, pid_str);
+        // configd not started: pass through at once instead of waiting for the timer
+        if (access(CONFIGD_SOCK, F_OK) == -1)
+            init_timeout = 1;
+        else
+            init_timeout = initialization(requester, pid_str);
         if (!init_timeout) remove(COMMIT_MARKER);
     }
 
@@ -209,8 +218,8 @@ int initialization(void* Requester, char* pid_val)
     sa.sa_handler = &timer_handler;
     sigaction(SIGALRM, &sa, NULL);
 
-    timer.it_value.tv_sec = 0;
-    timer.it_value.tv_usec = 10000;
+    timer.it_value.tv_sec = INIT_TIMEOUT_US / 1000000;
+    timer.it_value.tv_usec = INIT_TIMEOUT_US % 1000000;
     timer.it_interval.tv_sec = timer.it_interval.tv_usec = 0;
     none_timer.it_value.tv_sec = none_timer.it_value.tv_usec = 0;
     none_timer.it_interval.tv_sec = none_timer.it_interval.tv_usec = 0;
