@@ -183,13 +183,11 @@ override_dh_auto_install:
 	mkdir -p $(DIR_LIBVYOSCONFIG)/$(VYCONF_DATA)
 	mkdir -p $(DIR_LIBVYOSCONFIG)/$(VYCONF_DEF)
 	mkdir -p $(DIR_LIBVYOSCONFIG)/$(VYCONF_BIN)
-
-	cp $(OCAML_DIR)/share/vyconf/vyconf.proto $(DIR_LIBVYOSCONFIG)/$(VYCONF_DATA)
-	cp $(OCAML_DIR)/share/vyconf/vyconfd.conf $(DIR_LIBVYOSCONFIG)/$(VYCONF_DEF)
-	cp $(OCAML_DIR)/bin/vyconfd $(DIR_LIBVYOSCONFIG)/$(VYCONF)
-	cp $(OCAML_DIR)/bin/vyconf_cli $(DIR_LIBVYOSCONFIG)/$(VYCONF)
-	cp $(OCAML_DIR)/bin/vyconf_cli_compat $(DIR_LIBVYOSCONFIG)/$(VYCONF_BIN)
 	cp libvyosconfig/_build/libvyosconfig.so $(DIR_LIBVYOSCONFIG)/$(VYOS_LIB_DIR)/libvyosconfig.so.0
+	# vyos-commitd reads /etc/vyos/vyconfd.conf (vyos.defaults.vyconfd_conf);
+	# the OCAML_DIR share path never existed, ship it from the pinned vyconf
+	# source (bind-mounted read-only at /vyos-src, see libvyosconfig/srx-opam-compat.sh).
+	install -m644 /vyos-src/vyconf/data/vyconfd.conf $(DIR_LIBVYOSCONFIG)/$(VYCONF_DEF)/vyconfd.conf
 
 	# OCaml binaries from former vyos-utils package
 	cp $(VYOS_OCAML_TOOLS)/numeric $(DIR)/$(VYOS_LIBEXEC_DIR)/validators
