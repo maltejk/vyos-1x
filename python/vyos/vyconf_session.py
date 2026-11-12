@@ -22,7 +22,6 @@ import json
 from functools import wraps
 from typing import Type
 
-from vyos.proto import vyconf_client
 from vyos.migrate import ConfigMigrate
 from vyos.migrate import ConfigMigrateError
 from vyos.component_version import append_system_version
@@ -31,6 +30,22 @@ from vyos.proto.vyconf_proto import Errnum
 from vyos.utils.commit import acquire_commit_lock_file
 from vyos.utils.commit import release_commit_lock_file
 from vyos.utils.commit import call_commit_hooks
+
+
+class _LazyVyconfClient:
+    """Defer importing vyos.proto.vyconf_client (and thus protobuf, ~300 ms
+    on slow CPUs) until a request is actually sent: the vyconf backend is
+    opt-in and most ConfigSession users never reach it."""
+
+    @staticmethod
+    def send_request(*args, **kwargs):
+        # pylint: disable=import-outside-toplevel
+        from vyos.proto import vyconf_client as _client
+
+        return _client.send_request(*args, **kwargs)
+
+
+vyconf_client = _LazyVyconfClient()
 
 
 class VyconfSessionError(Exception):
