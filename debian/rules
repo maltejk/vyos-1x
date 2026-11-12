@@ -22,7 +22,9 @@ VYCONF_DEF := etc/vyos
 VYCONF_REFTREE_DIR := $(VYOS_LIBEXEC_DIR)/vyconf/reftree
 
 OCAML_DIR := /opt/opam/${OCAML_VERSION}
-VYOS_OCAML_TOOLS := src/ocaml/_build/install/default/bin
+# SRX cross build: mips64el outputs from the xcross context if built
+VYOS_OCAML_TOOLS = $(firstword $(wildcard src/ocaml/_build/install/default.mips64el/bin) src/ocaml/_build/install/default/bin)
+LIBVYOSCONFIG_SO = $(firstword $(wildcard libvyosconfig/_build-mips64el/libvyosconfig.so) libvyosconfig/_build/libvyosconfig.so)
 
 MIGRATION_SCRIPTS_DIR := opt/vyatta/etc/config-migrate/migrate
 ACTIVATION_SCRIPTS_DIR := usr/libexec/vyos/activate
@@ -184,7 +186,7 @@ override_dh_auto_install:
 	mkdir -p $(DIR_LIBVYOSCONFIG)/$(VYCONF_DATA)
 	mkdir -p $(DIR_LIBVYOSCONFIG)/$(VYCONF_DEF)
 	mkdir -p $(DIR_LIBVYOSCONFIG)/$(VYCONF_BIN)
-	cp libvyosconfig/_build/libvyosconfig.so $(DIR_LIBVYOSCONFIG)/$(VYOS_LIB_DIR)/libvyosconfig.so.0
+	cp $(LIBVYOSCONFIG_SO) $(DIR_LIBVYOSCONFIG)/$(VYOS_LIB_DIR)/libvyosconfig.so.0
 	# vyos-commitd reads /etc/vyos/vyconfd.conf (vyos.defaults.vyconfd_conf);
 	# the OCAML_DIR share path never existed, ship it from the pinned vyconf
 	# source (bind-mounted read-only at /vyos-src, see libvyosconfig/srx-opam-compat.sh).
