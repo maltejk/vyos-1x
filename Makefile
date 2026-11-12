@@ -20,6 +20,7 @@ libvyosconfig:
 		make -C libvyosconfig clean ; \
 		make -C libvyosconfig all ; \
 		sudo make -C libvyosconfig install ; \
+		if [ -f /opt/xocaml/dune-workspace ]; then make -C libvyosconfig cross || exit 1; fi ; \
 	fi
 
 %.xml: %.xml.in

@@ -40,3 +40,10 @@ VC=/tmp/vyconf-src
 rm -rf "$VC"
 cp -r /vyos-src/vyconf "$VC"
 opam pin add vyconf "$VC" -y
+# SRX cross build: the same source for the mips64el findlib toolchain
+# of the xcross image (docker/xcross/xocaml-setup.sh); bytecode, C stub cross built
+if [ -f /opt/xocaml/dune-workspace ]; then
+    dune build --workspace /opt/xocaml/dune-workspace -p vyos1x-config \
+        _build/default.mips64el/vyos1x-config-mips64el.install
+    cp -aL _build/install/default.mips64el/lib/. /opt/xocaml/lib/
+fi
