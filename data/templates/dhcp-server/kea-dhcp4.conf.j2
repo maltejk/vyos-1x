@@ -63,7 +63,7 @@
         "hooks-libraries": [
 {% if high_availability is vyos_defined %}
             {
-                "library": "/usr/lib/{{ machine }}-linux-gnu/kea/hooks/libdhcp_ha.so",
+                "library": "{{ hooks_dir }}/libdhcp_ha.so",
                 "parameters": {
                     "high-availability": [{{ high_availability | kea_high_availability_json }}]
                 }
@@ -71,7 +71,7 @@
 {% endif %}
 {% if hostfile_update is vyos_defined %}
             {
-                "library": "/usr/lib/{{ machine }}-linux-gnu/kea/hooks/libdhcp_run_script.so",
+                "library": "{{ hooks_dir }}/libdhcp_run_script.so",
                 "parameters": {
                     "name": "/usr/libexec/vyos/system/on-dhcp-event.sh",
                     "sync": false
@@ -80,7 +80,7 @@
 {% endif %}
 {% if any_ping_check is vyos_defined %}
             {
-                "library": "/usr/lib/{{ machine }}-linux-gnu/kea/hooks/libdhcp_ping_check.so",
+                "library": "{{ hooks_dir }}/libdhcp_ping_check.so",
                 "parameters": {
                     "enable-ping-check" : true,
                     "min-ping-requests" : 1,
@@ -91,7 +91,7 @@
             },
 {% endif %}
             {
-                "library": "/usr/lib/{{ machine }}-linux-gnu/kea/hooks/libdhcp_lease_cmds.so",
+                "library": "{{ hooks_dir }}/libdhcp_lease_cmds.so",
                 "parameters": {}
             }
         ],
