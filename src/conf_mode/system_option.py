@@ -656,7 +656,11 @@ def apply(options):
         f.write(timeout)
 
     # tuned - performance tuning
-    if 'performance' in options:
+    if 'performance' in options and not os.path.exists('/usr/sbin/tuned-adm'):
+        # SRX300: tuned is only a stub (no tuned-adm); without this guard the loop below never ends
+        # and blocks the single-threaded vyos-configd
+        Warning('tuned is not available on this platform, performance profile ignored')
+    elif 'performance' in options:
         cmdl(['systemctl', 'restart', 'tuned.service'])
         # wait until daemon has started before sending configuration
         while not is_systemd_service_running('tuned.service'):
