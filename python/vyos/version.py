@@ -76,7 +76,9 @@ def get_full_version_data(fname=version_file):
     version_data = get_version_data(fname)
 
     # Get system architecture (well, kernel architecture rather)
-    version_data['system_arch'], _ = popen('uname -m', stderr=DEVNULL)
+    # SRX: uname -m reports "mips64" on mips64el (kernel arch has
+    # no ABI/endianness); show version must print the Debian architecture.
+    version_data['system_arch'], _ = popen('dpkg --print-architecture', stderr=DEVNULL)
 
     # A container shares the Kernel with - and inherits the DMI/CPUID data of -
     # its host, thus hvinfo would report the hypervisor of the host system
