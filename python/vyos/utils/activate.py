@@ -14,6 +14,7 @@
 # License along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 
+import os
 import json
 import typing
 from pathlib import Path
@@ -92,8 +93,15 @@ def refresh_activation_list():
     new_obj = json.loads(new_list_path.read_text())
 
     orig_list_path = Path(activation_list)
+    orig_obj = None
     if orig_list_path.exists():
-        orig_obj = json.loads(orig_list_path.read_text())
+        try:
+            orig_obj = json.loads(orig_list_path.read_text())
+        except json.JSONDecodeError:
+            # empty/truncated list (e.g. unclean shutdown after a non-synced
+            # write): regenerate from the packaged list
+            Warn('activation list unreadable, regenerating')
+    if orig_obj is not None:
         if orig_obj == new_obj:
             return
 
@@ -101,7 +109,12 @@ def refresh_activation_list():
     else:
         obj = new_obj
 
-    orig_list_path.write_text(json.dumps(obj))
+    tmp_path = orig_list_path.with_name(orig_list_path.name + '.tmp')
+    with open(tmp_path, 'w') as f:
+        f.write(json.dumps(obj))
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp_path, orig_list_path)
 
 
 first_installed_boot_file = '/run/first_installed_boot'
