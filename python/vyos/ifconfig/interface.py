@@ -60,6 +60,7 @@ from vyos.utils.assertion import assert_positive
 from vyos.utils.assertion import assert_range
 from vyos.ifconfig.control import Control
 from vyos.ifconfig.vrrp import VRRP
+from vyos.ifconfig.srx_board import board_mac
 from vyos.ifconfig.operational import Operational
 from vyos.ifconfig import Section
 from vyos import ConfigError
@@ -1881,7 +1882,7 @@ class Interface(Control):
             # T3871: the template keys the identity off a MAC, which is no
             # longer a configuration node - read it off the device
             if 'hw_id' not in self.config:
-                self.config['hw_id'] = read_file(f'/sys/class/net/{self.ifname}/address')
+                self.config['hw_id'] = read_file(f'/sys/class/net/{self.ifname}/address') or board_mac(self)
             render(wpa_supplicant_conf, 'ethernet/wpa_supplicant.conf.j2', self.config)
 
             cert_file_path = os.path.join(cfg_dir, f'{self.ifname}_cert.pem')
