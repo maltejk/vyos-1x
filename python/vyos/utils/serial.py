@@ -62,7 +62,14 @@ def get_authenticated_ports(units):
     #
     # We can safely skip blank or LOGIN sessions with valid device names.
     #
-    for line in cmdl(['utmpdump', UTMP_PATH]).splitlines():
+    # SRX300: /run/utmp may not exist (no agetty on a VT, no utmp writer yet) -
+    # utmpdump then exits with an error; treat it as "no authenticated ports".
+    try:
+        utmp_dump = cmdl(['utmpdump', UTMP_PATH])
+    except (OSError, RuntimeError):
+        return connected
+
+    for line in utmp_dump.splitlines():
         row = line.split('] [')
         user_name = row[3].strip()
         user_term = row[4].strip()
