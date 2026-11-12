@@ -1,6 +1,6 @@
 DEBUG = 0
 
-CC := gcc
+CC ?= gcc
 CFLAGS := -I./mkjson -L./mkjson/lib -DDEBUG=${DEBUG}
 LIBS := -lmkjson -lzmq
 
@@ -10,7 +10,7 @@ vyshim: vyshim.c libmkjson
 
 .PHONY: libmkjson
 libmkjson:
-	$(MAKE) -C mkjson
+	$(MAKE) -C mkjson CC="$(CC)"
 
 all: vyshim
 
