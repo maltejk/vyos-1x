@@ -35,7 +35,8 @@ DEB_TARGET_ARCH := $(shell dpkg-architecture -qDEB_TARGET_ARCH)
 BASE_VERSION := 999.0
 COMMIT_ID := $(shell echo -n g && git rev-parse --short HEAD)
 COMMIT_COUNT := $(shell git rev-list HEAD --count)
-DIRTY_FLAG := $(shell ! git diff --quiet || ! git diff --cached --quiet && echo -dirty || echo)
+# SRX: the quilt series is applied to the tree, so git always reports dirty
+DIRTY_FLAG :=
 
 %:
 	dh $@ --with python3, --with quilt
