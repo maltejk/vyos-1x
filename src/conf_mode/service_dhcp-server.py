@@ -15,6 +15,7 @@
 import os
 import re
 
+from glob import glob
 from sys import exit
 from sys import argv
 
@@ -624,6 +625,10 @@ def generate(dhcp):
 
     dhcp['lease_file'] = lease_file
     dhcp['machine'] = os.uname().machine
+
+    # the multiarch dir is not always <machine>-linux-gnu (mips64el-linux-gnuabi64),
+    # so resolve the Kea hooks dir via glob
+    dhcp['hooks_dir'] = glob('/usr/lib/*-linux-gnu*/kea/hooks')[0]
 
     kea_fix_data_dir(os.path.dirname(lease_file), user=user_group)
 
