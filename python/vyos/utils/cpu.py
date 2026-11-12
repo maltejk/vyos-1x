@@ -44,14 +44,15 @@ def _find_cpus(cpuinfo_lines):
     # when we need to find physicall distinct CPUs there.
     cpus = {}
 
-    cpu_number = 0
+    cpu_number = None
 
     for l in cpuinfo_lines:
         key, value = _split_line(l)
         if key == 'processor':
             cpu_number = value
             cpus[cpu_number] = {}
-        else:
+        elif cpu_number is not None:
+            # MIPS: 'system type'/'machine' come before the first 'processor'
             cpus[cpu_number][key] = value
 
     return cpus
