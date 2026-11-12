@@ -2,8 +2,6 @@ open Ctypes
 open Foreign
 
 open Vyos1x
-open Vyconfd_config
-open Commitd_client
 
 module VT = Vytree
 module CT = Config_tree
