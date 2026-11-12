@@ -109,9 +109,9 @@ Depends:
   linux-cpupower,
   hwloc,
 # For "system option kdump"
-  kexec-tools,
-  kdump-tools,
-  makedumpfile,
+  kexec-tools [amd64 arm64],
+  kdump-tools [amd64 arm64],
+  makedumpfile [amd64 arm64],
 # End "system option kdump"
 # ipaddrcheck is widely used in IP value validators
   ipaddrcheck,
