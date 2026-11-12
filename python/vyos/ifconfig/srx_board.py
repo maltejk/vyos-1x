@@ -18,6 +18,8 @@
 Kept out of interface.py so the platform logic does not touch upstream code.
 """
 
+import os
+
 
 def machine_id() -> str:
     """Stable per-installation ID when dmidecode/DMI is unavailable."""
@@ -26,3 +28,17 @@ def machine_id() -> str:
             return f.read().strip()
     except OSError:
         return ''
+
+
+def board_mac(intf):
+    """SRX300: the switch ports ethN are VLAN devices on 'uplink' (no sysfs
+    'device', no hw-id). Their permanent MAC is the board MAC of 'uplink'.
+    Returns None for any other interface."""
+    if intf.definition.get('section') != 'ethernet' or \
+       os.path.exists(f'/sys/class/net/{intf.ifname}/device'):
+        return None
+    try:
+        with open('/sys/class/net/uplink/address') as f:
+            return f.read().strip()
+    except OSError:
+        return None
