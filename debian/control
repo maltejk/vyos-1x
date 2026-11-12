@@ -47,7 +47,7 @@ Build-Depends:
 Standards-Version: 3.9.6
 
 Package: vyos-1x
-Architecture: amd64 arm64
+Architecture: amd64 arm64 mips64el
 Pre-Depends:
   libpam-runtime,
   libnss-tacplus,
