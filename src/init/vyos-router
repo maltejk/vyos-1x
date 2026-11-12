@@ -478,6 +478,8 @@ EOF
 gen_duid ()
 {
     DUID_FILE="/var/lib/dhcpv6/dhcp6c_duid"
+    # SRX300: no DMI; srx-duid.service creates the DUID beforehand
+    [ -s ${DUID_FILE} ] && return 0
     UUID_FILE="/sys/class/dmi/id/product_uuid"
     UUID_FILE_ALT="/sys/class/dmi/id/product_serial"
     if [ ! -f ${UUID_FILE} ] && [ ! -f ${UUID_FILE_ALT} ]; then
