@@ -126,10 +126,15 @@ def is_tty(name: str, warning=False) -> bool:
     import os
     path_tty = f'/dev/{name}'
     if os.path.exists(path_tty):
-        with open(path_tty, 'rb') as f:
-            fd = f.fileno()
+        # O_NOCTTY: vyos-configd runs this in-process as a session leader. A plain open()
+        # makes the tty its controlling tty while no session owns it (serial-getty stopped),
+        # and the next serial-getty start (TTYVHangup=yes -> vhangup) then SIGHUPs configd.
+        fd = os.open(path_tty, os.O_RDONLY | os.O_NOCTTY)
+        try:
             # True if filename is a TTY
             return os.isatty(fd)
+        finally:
+            os.close(fd)
     elif warning:
         from vyos.base import Warning
         Warning(f'Device "{name}" does not exist!')
