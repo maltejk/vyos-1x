@@ -34,12 +34,12 @@ from vyos.defaults import nft_time_refresh
 from vyos.defaults import rt_global_table
 from vyos.defaults import rt_global_vrf
 from vyos.defaults import user_mark_mask
+from vyos.firewall import get_pbr_table_mark
 from vyos.geoip import  geoip_refresh, geoip_update
 from vyos import ConfigError
 from vyos import airbag
 airbag.enable()
 
-mark_offset = 0x7FFFFFFF
 nftables_conf = '/run/nftables_policy.conf'
 domain_resolver_usage = '/run/use-vyos-domain-resolver-policy-route'
 domain_resolver_usage_glob = '/run/use-vyos-domain-resolver*'
@@ -264,7 +264,7 @@ def apply_table_marks(policy):
                             if vrf_table_id in tables:
                                 continue
                             tables.append(vrf_table_id)
-                            table_mark = mark_offset - vrf_table_id
+                            table_mark = get_pbr_table_mark(vrf_table_id)
                             # fragments carry bit 31 of the mark while being routed
                             cmdl(cmd_list + ['rule', 'add', 'pref', str(vrf_table_id),
                                               'fwmark', f'{table_mark}/{user_mark_mask}', 'table', str(vrf_table_id)])
@@ -280,7 +280,7 @@ def cleanup_table_marks():
             table = int(rule['table'])
             if fwmark[:2] == '0x':
                 fwmark = int(fwmark, 16)
-            if (int(fwmark) == (mark_offset - table)):
+            if (int(fwmark) == get_pbr_table_mark(table)):
                 # a rule with a mask is only found again with the same mask
                 if 'fwmask' in rule:
                     fwmark = f'{fwmark}/{rule["fwmask"]}'
