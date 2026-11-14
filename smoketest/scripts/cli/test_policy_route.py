@@ -19,12 +19,12 @@ import unittest
 from base_vyostest_shim import VyOSUnitTestSHIM
 
 from vyos.utils.process import cmdl
+from vyos.firewall import get_pbr_table_mark
 from vyos.utils.process import run
 
 mark = '100'
 conn_mark = '555'
 conn_mark_set = '111'
-table_mark_offset = 0x7fffffff
 
 def mark_set(mark_hex):
     # bit 31 is kept for fragments, nft folds it into the listed mask
@@ -77,7 +77,7 @@ class TestPolicyRoute(VyOSUnitTestSHIM.TestCase):
 
         # Verify ip rule cleanup
         ip_rule_search = [
-            ['fwmark ' + hex(table_mark_offset - int(table_id)) + '/0x7fffffff', 'lookup ' + table_id]
+            ['fwmark ' + hex(get_pbr_table_mark(table_id)) + '/0x7fffffff', 'lookup ' + table_id]
         ]
 
         self.verify_rules(ip_rule_search, inverse=True)
@@ -196,7 +196,7 @@ class TestPolicyRoute(VyOSUnitTestSHIM.TestCase):
 
         self.cli_commit()
 
-        mark_hex = "{0:#010x}".format(table_mark_offset - int(table_id))
+        mark_hex = "{0:#010x}".format(get_pbr_table_mark(table_id))
 
         # IPv4
 
@@ -219,7 +219,7 @@ class TestPolicyRoute(VyOSUnitTestSHIM.TestCase):
         # IP rule fwmark -> table
 
         ip_rule_search = [
-            ['fwmark ' + hex(table_mark_offset - int(table_id)) + '/0x7fffffff', 'lookup ' + table_id]
+            ['fwmark ' + hex(get_pbr_table_mark(table_id)) + '/0x7fffffff', 'lookup ' + table_id]
         ]
 
         self.verify_rules(ip_rule_search)
@@ -240,7 +240,7 @@ class TestPolicyRoute(VyOSUnitTestSHIM.TestCase):
 
         self.cli_commit()
 
-        mark_hex = "{0:#010x}".format(table_mark_offset - int(vrf_table_id))
+        mark_hex = "{0:#010x}".format(get_pbr_table_mark(vrf_table_id))
 
         # IPv4
 
@@ -263,7 +263,7 @@ class TestPolicyRoute(VyOSUnitTestSHIM.TestCase):
         # IP rule fwmark -> table
 
         ip_rule_search = [
-            ['fwmark ' + hex(table_mark_offset - int(vrf_table_id)) + '/0x7fffffff', 'lookup ' + vrf]
+            ['fwmark ' + hex(get_pbr_table_mark(vrf_table_id)) + '/0x7fffffff', 'lookup ' + vrf]
         ]
 
         self.verify_rules(ip_rule_search)
@@ -329,7 +329,7 @@ class TestPolicyRoute(VyOSUnitTestSHIM.TestCase):
 
         self.cli_commit()
 
-        mark_hex = "{0:#010x}".format(table_mark_offset - int(table_id))
+        mark_hex = "{0:#010x}".format(get_pbr_table_mark(table_id))
 
         # IPv4
         nftables_search = [

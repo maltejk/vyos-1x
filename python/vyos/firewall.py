@@ -24,6 +24,23 @@ from vyos.defaults import rt_global_table
 from vyos.defaults import rt_global_vrf
 from vyos.defaults import user_mark_mask
 
+# fwmark used to steer "set table"/"set vrf" traffic (policy route/route6)
+# into the right routing table via "ip rule". Tools that manage their own
+# netfilter rules, e.g. podman/netavark's NETAVARK-HOSTPORT-MASQ chain, match
+# fixed low-order mark bits (netavark: 0x2000/0x2000 = "masquerade"). The old
+# "offset minus table" scheme set bit 0x2000 for every table 1-200, so all
+# PBR traffic got masqueraded once a container network existed. Encode the
+# table ID so PBR_MARK_AVOID_BIT is never set, keeping the mapping unique.
+# Bit 31 stays clear (fragment_mark_bit); unique for tables below 65536.
+PBR_MARK_BASE = 0x7FFE0000
+PBR_MARK_AVOID_BIT = 13 # 0x2000
+
+def get_pbr_table_mark(table) -> int:
+    table = int(table)
+    low = table & ((1 << PBR_MARK_AVOID_BIT) - 1)
+    high = table >> PBR_MARK_AVOID_BIT
+    return PBR_MARK_BASE | (high << (PBR_MARK_AVOID_BIT + 1)) | low
+
 # Conntrack
 def conntrack_required(conf):
     required_nodes = ['nat', 'nat66', 'load-balancing wan']
@@ -615,7 +632,7 @@ def parse_rule(rule_conf, hook, fw_name, rule_id, ip_name):
             if table == 'main':
                 table = rt_global_table
         if set_table:
-            mark = 0x7FFFFFFF - int(table)
+            mark = get_pbr_table_mark(table)
             output.append(f'meta mark set meta mark & {fragment_mark_bit} | {mark}')
         if 'tcp_mss' in rule_conf['set']:
             mss = rule_conf['set']['tcp_mss']
