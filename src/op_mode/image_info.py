@@ -18,6 +18,7 @@
 # VyOS. If not, see <https://www.gnu.org/licenses/>.
 
 import sys
+import srx_image_installer as srx
 from typing import Union
 
 from tabulate import tabulate
@@ -82,6 +83,8 @@ def show_images_current(raw: bool) -> Union[image.BootDetails, str]:
 
 
 def show_images_summary(raw: bool) -> Union[image.BootDetails, str]:
+    if srx.is_srx():
+        return srx.show(raw)
     images_available: list[str] = grub.version_list()
     root_dir: str = disk.find_persistence()
     boot_vars: dict = grub.vars_read(f'{root_dir}/{image.CFG_VYOS_VARS}')
@@ -101,6 +104,8 @@ def show_images_summary(raw: bool) -> Union[image.BootDetails, str]:
 
 
 def show_images_details(raw: bool) -> Union[list[image.ImageDetails], str]:
+    if srx.is_srx():
+        return srx.show_details(raw)
     images_details = image.get_images_details()
 
     if raw:
