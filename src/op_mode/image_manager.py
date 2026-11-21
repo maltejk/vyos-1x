@@ -259,6 +259,10 @@ def parse_arguments() -> Namespace:
 if __name__ == '__main__':
     try:
         args: Namespace = parse_arguments()
+        import srx_image_installer as srx
+        if srx.is_srx():
+            srx.manage(args.action, args.image_name, args.no_prompt)
+            exit()
         if args.action == 'delete':
             delete_image(args.image_name, args.no_prompt)
         if args.action == 'set':
