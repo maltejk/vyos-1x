@@ -214,7 +214,7 @@ def list_slots(disk: str) -> tuple:
         sys.exit(f'Cannot read the slots of {disk}: {r.stderr.strip()}')
     lines = r.stdout.strip().splitlines()
     default = lines[0].split(': ', 1)[1].strip() if lines else ''
-    return default, [l.split() for l in lines[1:]]   # [name, size]
+    return default, [(l.split() + ['?'])[:2] for l in lines[1:]]   # [name, size]; '?' = no data dir
 
 
 def add_image(image_path: str, vrf: str = None, username: str = '', password: str = '',
