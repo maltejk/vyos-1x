@@ -120,7 +120,13 @@ class VyOSUnitTestSHIM:
 
         @staticmethod
         def _get_frr_daemon_pids() -> dict:
-            return {daemon: process_named_running(daemon) for daemon in frr_daemons}
+            # A platform may disable a daemon in /etc/frr/daemons (daemon=no)
+            try:
+                with open('/etc/frr/daemons') as f:
+                    disabled = {l.split('=')[0].strip() for l in f if l.strip().endswith('=no')}
+            except OSError:
+                disabled = set()
+            return {d: process_named_running(d) for d in frr_daemons if d not in disabled}
 
         def refresh_frr_daemon_pids(self):
             """ Take the FRR daemon PID baseline, all daemons must be running.
