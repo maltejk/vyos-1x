@@ -1430,7 +1430,11 @@ if __name__ == '__main__':
         args: Namespace = parse_arguments()
         import srx_image_installer as srx
         if srx.is_srx():
-            srx.install_image() if args.action == 'install' else srx.add_image()
+            if args.action == 'install':
+                srx.install_image()
+            else:
+                srx.add_image(args.image_path, args.vrf, args.username, args.password,
+                              args.no_prompt, args.force)
             exit()
         if args.action == 'install':
             install_image()
